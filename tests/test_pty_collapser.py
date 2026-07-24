@@ -41,19 +41,19 @@ def _tool_result(call_id, content):
 
 
 def make_interactive_session():
-    """Build a synthetic Hermes session mirroring the M3 interactive timeline."""
+    """Build a synthetic Hermes session with a background PTY delegation."""
     messages = [
         # msg 4: binary resolution
-        _assistant([_tc("tc1", "terminal", {"command": "which -a qodercli && qodercli --version"})]),
-        _tool_result("tc1", "/usr/local/bin/qodercli\nqodercli v1.1.1"),
+        _assistant([_tc("tc1", "terminal", {"command": "which -a deploy-agent && deploy-agent --version"})]),
+        _tool_result("tc1", "/usr/local/bin/deploy-agent\ndeploy-agent v2.0.1"),
 
         # msg 10: PTY parent launch
         _assistant([_tc("tc2", "terminal", {
-            "command": "qodercli -i 'Implement auth across src/routes, src/models, tests'",
+            "command": "deploy-agent -i 'Implement auth across src/routes, src/models, tests'",
             "pty": True,
             "background": True,
             "timeout": 300,
-        })], reasoning="Delegating to qodercli interactive mode"),
+        })], reasoning="Delegating to interactive mode"),
         _tool_result("tc2", json.dumps({"output": "Background process started", "session_id": "proc_abc123"})),
 
         # msg 12: first poll
@@ -102,11 +102,11 @@ def make_interactive_session():
 def make_non_pty_session():
     """Build a session with no PTY usage (print-mode style)."""
     messages = [
-        _assistant([_tc("tc1", "terminal", {"command": "which -a qodercli && qodercli --version"})]),
-        _tool_result("tc1", "/usr/local/bin/qodercli"),
+        _assistant([_tc("tc1", "terminal", {"command": "which -a deploy-agent && deploy-agent --version"})]),
+        _tool_result("tc1", "/usr/local/bin/deploy-agent"),
 
         _assistant([_tc("tc2", "terminal", {
-            "command": "qodercli -p 'Implement tax helper' --print",
+            "command": "deploy-agent -p 'Implement tax helper' --print",
             "timeout": 180,
         })], reasoning="Using print mode for bounded task"),
         _tool_result("tc2", "Created src/utils/tax.py"),
@@ -138,7 +138,7 @@ class TestInteractivePTY:
         assert self.pty_sessions[0].session_id == "proc_abc123"
 
     def test_command_preserved(self):
-        assert "qodercli -i" in self.pty_sessions[0].command
+        assert "deploy-agent -i" in self.pty_sessions[0].command
 
     def test_poll_count(self):
         # poll×3 + wait×1 = 4 (wait counts as poll)
@@ -255,7 +255,7 @@ class TestEdgeCases:
         """PTY launch with no subsequent process() calls."""
         messages = [
             _assistant([_tc("tc1", "terminal", {
-                "command": "qodercli -i 'do stuff'",
+                "command": "deploy-agent -i 'do stuff'",
                 "pty": True,
                 "background": True,
             })]),
@@ -273,10 +273,10 @@ class TestEdgeCases:
         assert execute_events[0].outcome == EventOutcome.PARTIAL
 
     def test_terminal_without_pty_not_collapsed(self):
-        """terminal with qodercli but pty=False should NOT be treated as PTY parent."""
+        """terminal with pty=False should NOT be treated as PTY parent."""
         messages = [
             _assistant([_tc("tc1", "terminal", {
-                "command": "qodercli -p 'quick task' --print",
+                "command": "deploy-agent -p 'quick task' --print",
                 "pty": False,
             })]),
             _tool_result("tc1", "Done."),
@@ -290,7 +290,7 @@ class TestEdgeCases:
         """terminal with pty=True but background=False is foreground — not a PTY parent."""
         messages = [
             _assistant([_tc("tc1", "terminal", {
-                "command": "qodercli -i 'task'",
+                "command": "deploy-agent -i 'task'",
                 "pty": True,
                 "background": False,
             })]),
@@ -303,7 +303,7 @@ class TestEdgeCases:
         """5+ polls without any writes triggers blockade in h3_verdict."""
         messages = [
             _assistant([_tc("tc1", "terminal", {
-                "command": "qodercli -i 'task'",
+                "command": "deploy-agent -i 'task'",
                 "pty": True,
                 "background": True,
             })]),
