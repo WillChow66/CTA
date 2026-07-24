@@ -4,8 +4,8 @@
 Reproduces the full CTA skill audit from committed raw session data.
 An external reviewer can run this without having written the skill:
 
-    python scripts/run_audit.py --config configs/<skill>.json
-    python scripts/run_audit.py --config configs/qodercli.yaml --captures-dir data/m3_captures
+    python scripts/run_audit.py --config configs/<skill>.yaml
+    python scripts/run_audit.py --config configs/xurl.yaml --captures-dir data/captures
 
 Reads:  <captures_dir>/*/state.db + result.json
 Writes: data/audit_report.json
@@ -376,7 +376,7 @@ def markdown_report(runs: list, hypotheses: dict, sips: list, controls: dict, co
 def main():
     parser = argparse.ArgumentParser(description="G6 CTA Audit Runner")
     parser.add_argument("--config", type=Path, required=True,
-                        help="Per-skill JSON config (e.g., configs/qodercli.json)")
+                        help="Per-skill YAML/JSON config (e.g., configs/xurl.yaml)")
     parser.add_argument("--captures-dir", type=Path, default=None,
                         help="Override captures directory from config")
     parser.add_argument("--structural", action="store_true",
