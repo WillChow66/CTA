@@ -1,0 +1,77 @@
+!! CORRECTION (2026-07-28) -- read before quoting anything below.
+!! The divergence-level destructive share of [35.3%, 39.4%] derived in section (1)
+!! is WITHDRAWN. It compares fires/fires against divergences/divergences, i.e. both
+!! terms change, so it is not a like-for-like restatement of the paper's 54.2%.
+!! Like-for-like, the fire-level destructive share 283/522 = 54.2% is UNCHANGED.
+!! The forced-EP decomposition below is valid as a construct-validity point about EP,
+!! but must NOT be used as a share adjustment: applied consistently it RAISES the
+!! destructive share to 283/410 = 69.0%.
+!! Authoritative source: FINAL_NUMBERS.txt section [C].
+
+
+==============================================================================
+cta_destructive_accounting.py -- FIRE-LEVEL vs DIVERGENCE-LEVEL
+==============================================================================
+divergences : 696  (target_mismatch=521, unilateral_action=112, content_mismatch=63)
+SIP fires   : 522  (EP=186, SA=184, CB=99, RE=42, PS=11)
+fires per divergence (mean) : 0.750   (a divergence can carry 0..5 fires)
+------------------------------------------------------------------------------
+(1) FIRE-LEVEL shares -- the number the paper reports
+    destructive   283 / 522 =  54.2%   (SA+CB)
+    constructive  197 / 522 =  37.7%   (EP+PS)
+    neutral        42 / 522 =   8.0%   (RE)
+------------------------------------------------------------------------------
+(2) DIVERGENCE-LEVEL bounds -- what the aggregates actually license
+    A divergence counts as 'destructive' if SA or CB fired on it.
+    lower bound (SA and CB maximally co-fire on the same divergences): 246 / 696 = 35.3%
+    upper bound (SA and CB never co-fire, capped by each task's divergence count): 274 / 696 = 39.4%
+    => destructive share at the DIVERGENCE level is in [35.3%, 39.4%], not 54.2%.
+    divergences carrying ANY SIP: in [328, 428] = [47.1%, 61.5%]
+    tasks where fires > divergences (co-firing is arithmetically forced): 14
+        vector-index-tuning                 40 fires over  23 divergences
+        dbt-transformation-patterns         24 fires over  12 divergences
+        rag-implementation                  24 fires over  12 divergences
+        similarity-search-patterns          21 fires over  11 divergences
+        django-patterns                     26 fires over  17 divergences
+        risk-metrics-calculation            21 fires over  14 divergences
+        bash-defensive-patterns             16 fires over  11 divergences
+        creating-financial-models           14 fires over   9 divergences
+------------------------------------------------------------------------------
+(3) FORCED-EP DECOMPOSITION
+    EP threshold = 0.50 ; is_unilateral adds a flat +0.55 base (module4_detector.py ~L326) => every unilateral_action divergence emits EP with no skill content required.
+    consistency check: EP_i >= unilateral_i for every task? YES (0 violations)
+    unilateral_action divergences        : 112
+    EP fires                             : 186
+    -> forced by the unilateral base     : 112 = 60.2% of EP fires, 21.5% of all 522 fires
+    -> earned by keyword/write evidence  : 74 = 39.8% of EP fires
+    tasks whose EP fires are 100% forced : 15 / 26 with any unilateral divergence
+    RE scoring uses only trace-vs-trace features (intent/content similarity, event-count ratio, target Jaccard); no skill-document term.
+    => fires that require NO skill-document content at all: RE 42 + forced EP 112 = 154 = 29.5% of all fires.
+    Constructive share net of forced EP: (EP 186 - forced 112 + PS 11) = 85 = 16.3% of fires (paper's constructive share: 37.7%).
+------------------------------------------------------------------------------
+(4) THRESHOLDS -- code vs paper text
+    code (authoritative, module4_detector.py L112-122): EP=0.50, SA=0.40, CB=0.55, RE=0.45, PS=0.55
+    paper text says a uniform 0.50; config min_detection_confidence is dead code.
+    Consequence for this accounting: SA fires at 0.40 and CB at 0.55, i.e. the two DESTRUCTIVE types sit on opposite sides of the value the paper quotes, so the destructive share is threshold-sensitive in a way the text does not disclose. Re-scoring at a true uniform 0.50 needs the raw per-fire scores -> NOT COMPUTABLE here.
+------------------------------------------------------------------------------
+(5) NOT COMPUTABLE FROM THE SHIPPED AGGREGATES
+    Raw traces (claude_process/**/*.jsonl) are gitignored and absent here;
+    cta_output holds only per-task aggregates. The following need a re-run
+    on the machine that has the traces:
+    1. Exact divergence-level destructive share. Needs the (divergence_id, sip_type) join; the aggregates only carry per-task per-type counts. Bounds only: [246, 274] of 696 = [35.3%, 39.4%].
+    2. The co-fire matrix (which SIP types land on the SAME divergence). This is what decides whether 'destructive' and 'constructive' fires are describing the same behaviour twice.
+    3. Whether the 112 forced-EP fires sit on divergences that ALSO carry SA or CB. If they largely do, the constructive/destructive split is double-counting one event.
+    4. Per-fire confidence distribution and how many fires sit within epsilon of their threshold. Only a per-task per-type avg_confidence is stored, so threshold sensitivity (e.g. re-scoring every type at a uniform 0.50) cannot be simulated.
+    5. Phase attribution of SIP fires. divergence_statistics carries by_phase, but sip_statistics does not, so 'SIPs concentrate in phase X' is unverifiable here.
+    6. Any per-divergence null baseline (e.g. shuffling skill documents across tasks to get a false-positive rate for SA/CB). Requires re-running Modules 3-4 on the raw traces.
+    7. Anything about run-to-run variance: r=1, one instance per skill, so there is no within-task replicate in this data at all.
+
+==============================================================================
+VERDICT
+==============================================================================
+The paper's '54.2% of SIPs are destructive' is a share of FIRES.
+At the level of distinct divergent behaviours the same data supports only 35.3%-39.4%.
+Separately, 112 of 186 EP fires (60.2%) are emitted by a structural rule that never inspects the skill document, so the constructive column is inflated: 21.5% of ALL fires are forced EP.
+RECOMMENDATION: report the destructive share at the divergence level with the bound, and report forced-EP separately from earned EP.
+
+wrote <REPO_ROOT>/rebuttal/results/cta_destructive_accounting.json

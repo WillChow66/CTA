@@ -1,0 +1,26 @@
+E0 / E1 SWEEP RESULTS   (pairs with no parseable output: 0)
+============================================================================================================
+Unit of analysis is the task. Excess = per-task treatment mean minus that task's
+same-condition (null-minus) mean. Wilcoxon is signed-rank over tasks.
+
+variant          n  treat div null div  excess            95% CI      p   treat sip null sip  excess            95% CI      p    rho
+------------------------------------------------------------------------------------------------------------------------------------
+baseline        17      20.95    19.55   +1.40  [ -0.86, +3.47]  0.207       18.57    16.08   +2.49  [ -0.50, +5.33]  0.109  1.000
+theta-uniform   17      20.95    19.55   +1.40  [ -0.86, +3.47]  0.207       16.78    14.96   +1.82  [ -0.35, +3.78]  0.109  0.993
+excise-skill    17      20.23    19.55   +0.68  [ -1.71, +2.96]  0.611       17.71    16.08   +1.63  [ -0.98, +4.10]  0.190  0.964
+cos-0.30        17      40.97    37.24   +3.73  [ -2.07, +8.58]  0.071       31.56    28.33   +3.22  [ -3.98, +9.53]  0.145  0.966
+cos-0.40        17      29.48    26.57   +2.91  [ -0.50, +5.85]  0.097       24.18    21.41   +2.77  [ -1.65, +6.73]  0.148  0.985
+cos-0.60        17      15.01    14.06   +0.95  [ -1.03, +2.91]  0.431       14.33    12.00   +2.33  [ -0.22, +4.83]  0.071  0.970
+cos-0.70        17      11.19    10.67   +0.52  [ -0.90, +1.99]  0.538       11.68     9.53   +2.15  [ +0.19, +4.14]  0.072  0.961
+theta-0.10      17      20.95    19.55   +1.40  [ -0.86, +3.47]  0.207       21.99    20.47   +1.52  [ -2.67, +4.95]  0.179  0.988
+theta-0.05      17      20.95    19.55   +1.40  [ -0.86, +3.47]  0.207       19.57    17.35   +2.22  [ -0.73, +4.91]  0.185  0.985
+theta+0.05      17      20.95    19.55   +1.40  [ -0.86, +3.47]  0.207       13.31    11.92   +1.39  [ -0.33, +3.08]  0.102  0.964
+theta+0.10      17      20.95    19.55   +1.40  [ -0.86, +3.47]  0.207       10.54    10.10   +0.44  [ -1.61, +2.32]  0.378  0.956
+
+READING
+  baseline reproduces the reported floor: null 19.55 div / 16.08 SIPs per pair
+  divergence excess across all 11 configurations: min +0.52, max +3.73, sign flips: no
+  SIP excess across all 11 configurations:        min +0.44, max +3.22, sign flips: no
+  per-task SIP rank correlation vs released config: min 0.956, median 0.968
+  Sec 3.4's stated uniform theta=0.50 gives excess +1.40 div / +1.82 SIPs vs the code's +1.40 / +2.49
+  E0 (skill-path events removed): treatment 20.23 div / 17.71 SIPs vs 20.95 / 18.57 at baseline; excess +0.68 / +1.63

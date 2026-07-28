@@ -1,0 +1,208 @@
+==============================================================================
+WHY SKILL CONSUMPTION FAILED IN MOST RUNS
+Data-only analysis of the claude-sonnet-4.5-nudged regen (17 tasks x 3 reps,
+51 with-skill traces; consumption labels from /root/subgroup/subgroup_report.txt:
+16 STRONG / 35 NONE). Generated 2026-07-28.
+Script + raw numbers: /root/why_consumption/why_analysis.py, analysis_dump.txt
+==============================================================================
+
+SCOPE. The question is why, even with an explicit nudge, 35/51 with-skill runs
+never touched the delivered skill, and why consumption concentrated in 4 tasks
+(3/3: add-admin-api-endpoint, add-uint-support*, bash-defensive-patterns,
+turborepo) while 7 tasks sat at 0/3 (changelog-automation, django-patterns,
+gitlab-ci-patterns, risk-metrics-calculation, springboot-tdd, tdd-workflow,
+xlsx). (*add-uint-support is 1/3 in the per-trace table; the 3/3 set per the
+table is add-admin-api-endpoint, bash-defensive-patterns, turborepo.)
+
+------------------------------------------------------------------------------
+H1. DIRECTIVE SUPPRESSION (context; not statistically testable here)
+------------------------------------------------------------------------------
+The harness prepends this to every task prompt (src/proxy/claude_code_proxy.py,
+instruction_prefix, ~line 145; verified verbatim at the top of the first user
+message in all traces):
+
+  INTERNAL_INSTRUCTION: DO_NOT_ASK_OR_PLAN
+  You MUST directly modify files in the repository under the workspace to implement the task.
+  Do NOT output a design plan or ask clarifying questions.
+  Write/update the necessary files (provide full file paths and contents).
+  Only output a concise summary of files changed and the final status.
+  EndInstruction
+
+The nudge is APPENDED to the end of the task content (env-gated SKILL_NUDGE=1):
+
+  NOTE: Installed agent skills are available in your context. If any installed
+  skill is relevant to this task, read its SKILL.md and follow it.
+
+Verified in traces: the nudge is present in 51/51 first user messages and is
+always the last thing in the message (e.g. turborepo r1: offset 2000 of 2135
+chars, fraction 0.94). So the nudge is not buried mid-prompt; it ends the
+prompt. The prefix demands immediate file modification, forbids planning and
+questions, and restricts the final output to a concise change summary. It does
+not literally forbid exploration, and non-consuming agents did explore the
+repository freely (H4). Two NONE traces (springboot-tdd r2, vector-index-tuning
+r2) explicitly reason about DO_NOT_ASK_OR_PLAN in the same turn-1 thinking
+block where they consider and then abandon the skill, which is consistent with
+execution pressure crowding out the optional read, but the prefix is constant
+across all runs, so it cannot explain within-nudged variance. What it can
+frame: under the default harness (no nudge) consumption was 0/34; the appended
+sentence alone moved it to 16/51, so prompt-level salience is causally
+necessary for any consumption under this prefix.
+
+------------------------------------------------------------------------------
+H2. RELEVANCE MATCHING (supported; strongest tested mechanism)
+------------------------------------------------------------------------------
+Lexical overlap between skill frontmatter (name + description) and task.md,
+vs per-task consumption (STRONG count of 3), n=17, Spearman with 20k-perm p:
+
+  content-word Jaccard:                rho = 0.582, p = 0.017
+  description containment in task:     rho = 0.629, p = 0.007
+  fraction of name tokens in task.md:  rho = 0.314, p = 0.218 (ns)
+
+Group means: description containment 0.53 for the 3/3 tasks vs 0.15 for the
+0/3 tasks; Jaccard 0.088 vs 0.034.
+
+Eyeball check on the full-consumption tasks: turborepo's name appears verbatim
+in the task text and its description triggers on turbo.json, dependsOn, and
+caching, all literally present in the task. bash-defensive-patterns has all 3
+name tokens in the task. add-admin-api-endpoint's description ("Add a new
+endpoint or endpoints to Ghost's Admin API at ghost/api/admin/**") essentially
+restates the task (containment 0.857). By contrast, the 0/3 skills are mostly
+generic-methodology skills whose descriptions share almost nothing lexically
+with their tasks: tdd-workflow containment 0.05, springboot-tdd 0.06,
+clojure-write 0.00 (the Metabase task never says "Clojure"), changelog 0.17,
+gitlab-ci 0.15, django 0.19.
+
+Counterexamples that sharpen the story: risk-metrics-calculation (name appears
+as a phrase in the task, containment 0.39) and xlsx (name verbatim) still went
+0/3. For xlsx the description itself explains the skip: it says "Do NOT
+trigger when the primary deliverable is a ... standalone Python script ...
+even if tabular data is involved", and the task is to implement a Python
+module inside openpyxl, so an agent following the description should skip.
+Relevance matching is therefore semantic trigger-matching against the
+description, not raw keyword overlap; the lexical metrics are a noisy proxy
+that still reaches rho about 0.6.
+
+------------------------------------------------------------------------------
+H3. LISTING SALIENCE (not supported)
+------------------------------------------------------------------------------
+Every with-trace carries one skill_listing attachment (58 entries, 7847 chars,
+order identical across traces and not alphabetical). Study-skill position vs
+consumption: Spearman rho = 0.028, p = 0.916. Early positions include 0/3
+tasks (tdd-workflow at #9, gitlab-ci-patterns at #10) and late positions
+include consumers (dbt-transformation-patterns #49 at 2/3, langsmith-fetch #50
+at 1/3); turborepo consumed 3/3 from #37. Position in the listing does not
+matter.
+
+Base rate of any other skill use: the 9 built-in skills (update-config,
+keybindings-help, simplify, fewer-permission-prompts, loop, claude-api, init,
+review, security-review) were invoked 0 times across all 102 traces (with and
+without). The Skill tool was used 6 times total: 5 invocations of the study
+skill in with-runs, plus 1 without-run (clojure-write r3) invoking a
+nonexistent "clojure-eval" skill. Spontaneous skill use is essentially zero;
+consumption, when it happened, was mostly a direct Read of
+.claude/skills/<name>/SKILL.md (11 traces) rather than the Skill tool.
+
+------------------------------------------------------------------------------
+H4. FIRST-ACTION ANALYSIS (supported as the mechanism: a turn-1 gate)
+------------------------------------------------------------------------------
+First tool call of the 35 NONE traces: read repo file 16, exploratory bash
+(ls/find/cat) 13, Glob/Grep 5, other bash 1. First three calls pooled: 41
+repo reads, 28 searches, 27 exploratory bash, 5 edit/writes (changelog and
+tdd-workflow runs started writing files within 3 calls), 4 other bash, and
+zero skill-related calls of any kind. So the prefix did not stop exploration;
+agents explored the repository, just never the skill directory.
+
+Acknowledgment (searching assistant text AND thinking blocks; traces contain
+755 thinking blocks across NONE traces):
+  - 29/35 NONE traces never mention skills anywhere in the run
+    (instruction ignored without a trace of deliberation).
+  - 5/35 acknowledged the study skill in their FIRST thinking block and then
+    never acted on it: clojure-write r2 ("I should use the clojure-write
+    skill since this is Clojure development work"), rag-implementation r2
+    ("I see there's a rag-implementation skill that might be relevant ...
+    Let me also check the structure of the langchain repository first"),
+    springboot-tdd r2 ("I should read that skill"), springboot-tdd r3,
+    vector-index-tuning r2 ("directly relevant! ... Actually, I should check
+    the existing repository structure first"). In every case the stated plan
+    is skill-later, repo-first, and the intention never resurfaces: a=b=c=0
+    for all five. Acknowledged-then-displaced, not deliberately rejected.
+  - 1/35 (clojure-write r1) invented a nonexistent "clojure-eval skill" late
+    in the run for verification; not the study skill.
+
+Mirror image on the consuming side: 14/16 STRONG traces mention the skill in
+their very first assistant block; in 10/16 the skill engagement IS tool call
+number 0, and in all 16 it occurs within the first 10 calls. No trace, in
+either group, first consulted the skill after mid-run. Consumption is decided
+in the first thinking block or never.
+
+Count summary for the caller's dichotomy: instruction-burial (nudge present
+but never acknowledged) = 29; acknowledged-then-skipped = 5 (all of the
+displaced-intention type, none an explicit reasoned rejection); other = 1.
+
+------------------------------------------------------------------------------
+H5. SKILL DOC LENGTH (descriptive; not supported)
+------------------------------------------------------------------------------
+SKILL.md length vs consumption: Spearman rho = 0.132, p = 0.611. The longest
+doc (turborepo, 26.8k chars, 26 bundle files) was consumed 3/3; the shortest
+(add-admin-api-endpoint, 1.0k chars) also 3/3; xlsx (11.5k chars, 54 bundle
+files) 0/3 sits mid-distribution. Task prompt length is also unrelated
+(rho = -0.024). Doc length does not gate the decision, which is expected
+given H4: the decision is made before any doc is opened, from the one-line
+description in the listing.
+
+------------------------------------------------------------------------------
+RANKED CONCLUSION (which mechanisms explain the 4-vs-7 split)
+------------------------------------------------------------------------------
+1. RELEVANCE / TRIGGER MATCH (H2), the primary driver. Consumption happens
+   when the one-line description in the skill listing reads, at first glance,
+   as describing this exact task (name verbatim or description restating the
+   task). rho about 0.6, perm p < 0.02 on crude lexical proxies; the fully
+   consumed tasks are exactly the ones whose skill is task-specific rather
+   than generic methodology. xlsx shows the semantic version of the same
+   mechanism: its description's explicit "Do NOT trigger" clause matches the
+   task's deliverable, so skipping was arguably correct per the description.
+
+2. TURN-1 GATE WITH INTENTION DECAY (H4), the mechanism through which H2
+   operates. The skill decision is made once, in the first thinking block,
+   before any tool call. If the match is not instantly obvious the skill
+   system is never revisited; even when the agent explicitly resolves to use
+   the skill (5 traces), "check the repo structure first" displaces the read
+   and nothing later re-triggers it. There is no deliberate, reasoned
+   rejection anywhere in the 35 NONE traces.
+
+3. DIRECTIVE PRESSURE (H1), contributory context. The DO_NOT_ASK_OR_PLAN
+   prefix pushes immediate implementation and minimal output, which plausibly
+   both shortens the turn-1 deliberation window and prevents any later
+   pause in which the skill could resurface. It is constant across runs, so
+   it cannot explain the task split, but the default-harness 0/34 vs nudged
+   16/51 contrast shows prompt salience is causally necessary under it.
+
+4. LISTING POSITION (H3): ruled out (rho 0.03).
+5. DOC LENGTH (H5): ruled out (rho 0.13); also mechanistically moot given 2.
+
+Practical reading for the rebuttal: skill consumption in this harness is not
+a capability failure of long docs or a context-window burial of the listing;
+it is a one-shot routing decision driven by description-task match, made
+under an execution-pressure prompt, with no re-evaluation loop.
+
+------------------------------------------------------------------------------
+CAVEATS
+------------------------------------------------------------------------------
+- n = 17 tasks (3 reps each); all correlations are task-level with heavy ties
+  in the outcome (0..3). Permutation p-values are reported but the sample is
+  small and the analysis is post hoc and observational.
+- Consumption labels come from the subgroup classifier (STRONG includes 4
+  attempted-only traces with no verified ingestion); reclassification could
+  shift the correlations somewhat.
+- The lexical overlap metrics are crude proxies for semantic trigger match;
+  the xlsx and risk-metrics counterexamples show they mismeasure individual
+  tasks even while the rank correlation is strong.
+- Acknowledgment detection is a keyword search ("skill"/SKILL.md) over text
+  and thinking blocks; paraphrased deliberation without the word "skill"
+  would be missed.
+- The H1 claim (0/34 default vs 16/51 nudged) compares separate run batches;
+  the prefix itself is present in every run and its causal contribution is
+  not identified by this dataset.
+- Single model (claude-sonnet-4.5 via CLI 2.1.118, non-interactive -p mode);
+  results may not generalize to other agents or interactive settings.
+==============================================================================

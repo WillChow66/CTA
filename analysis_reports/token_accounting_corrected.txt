@@ -1,0 +1,24 @@
+task                           paper ratio  true ratio paper capt%
+------------------------------------------------------------------
+add-admin-api-endpoint                1.32        1.42        1.00
+add-uint-support                      0.93        1.75        2.80
+bash-defensive-patterns               1.22        1.43        2.50
+changelog-automation                  0.93        2.10        4.68
+clojure-write                         0.93        0.77        1.20
+dbt-transformation-patterns           1.21        0.93        2.00
+django-patterns                       0.97        1.32        0.98
+github-actions-templates              1.59        1.60        1.10
+gitlab-ci-patterns                    1.23        0.95        7.06
+langsmith-fetch                       1.17        1.21        1.84
+rag-implementation                    0.78        1.89        2.50
+risk-metrics-calculation              0.77        1.29        1.21
+springboot-tdd                        0.90        0.98        1.56
+tdd-workflow                          1.81        1.99        2.33
+turborepo                             1.59        3.90        5.39
+vector-index-tuning                   1.00        1.10        2.42
+xlsx                                  1.90        2.54        1.23
+------------------------------------------------------------------
+MEAN                                  1.19        1.60        2.46
+MEDIAN                                1.17        1.42        2.00
+
+ratios below 1.0:  paper method 8/17   full accounting 4/17

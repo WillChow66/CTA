@@ -1,0 +1,61 @@
+!! CORRECTION (2026-07-28) -- read before quoting anything below.
+!! The bucket-label permutation result G=4.50, p=0.8399 is WITHDRAWN as a quotable
+!! number: it comes from an argmax-collapsed test that discards ~82% of the count
+!! information. The correct task-clustered permutation over full count vectors gives
+!! p = 0.17. Quote 0.17, not 0.84, and say "not statistically supported" rather than
+!! "indistinguishable from random". The ceiling SA-vs-EP paired sign test (12/12/13,
+!! exact p = 1.000) and the leave-one-out / rebucket results below are unaffected.
+!! Authoritative source: FINAL_NUMBERS.txt sections [A] and [B].
+
+
+==============================================================================
+cta_signature_stability.py -- FALSIFICATION TEST FOR PAPER FINDING #2
+==============================================================================
+unit of analysis = TASK (n=49, one instance per skill, r=1)
+seed=20260724  shuffles=20000  bootstrap=20000
+------------------------------------------------------------------------------
+(i) PERMUTATION TEST -- bucket x dominant-SIP table
+    usable tasks: 40  (excluded: 8 with zero SIPs, 1 with a tied argmax)
+    bucket       EP   SA   CB   RE   PS   total
+    ceiling       9   12    7    3    1      32
+    mid           2    2    1    2    0       7
+    floor         1    0    0    0    0       1
+    G_observed = 4.5037 ;  #(G_perm >= G_obs) = 16798 / 20000 ;  p = 0.8399
+------------------------------------------------------------------------------
+(ii) CLUSTER BOOTSTRAP over tasks -- P(pooled argmax = type | bucket)
+    ceiling  n=37  observed pooled SA=162 EP=147 CB=73 RE=22 PS=11  -> argmax SA
+             P(argmax): SA=0.670  EP=0.319  CB=0.001  [tie=0.010]
+             95% CI top1-top2 = [1, 81] ; SA-EP = [-51, 80] ; EP-CB = [14, 137]
+    mid      n=10  observed pooled EP=30 CB=26 RE=20 SA=16 PS=0  -> argmax EP
+             P(argmax): EP=0.455  CB=0.338  SA=0.106  RE=0.067  [tie=0.035]
+             95% CI top1-top2 = [0, 40] ; SA-EP = [-54, 21] ; EP-CB = [-41, 45]
+    floor    n= 2  observed pooled EP=9 SA=6 CB=0 RE=0 PS=0  -> argmax EP
+             P(argmax): EP=0.748
+             95% CI top1-top2 = [0, 6] ; SA-EP = [-6, 0] ; EP-CB = [0, 18]
+------------------------------------------------------------------------------
+(iii) PAIRED PER-TASK SIGN TESTS (exact, two-sided)
+    ceiling  SA_vs_EP  : SA>EP in 12 tasks, EP>SA in 12, ties 13  (pooled SA=162 vs EP=147)  ->  p = 1.0000
+    mid      EP_vs_CB  : EP>CB in 2 tasks, CB>EP in 2, ties 6  (pooled EP=30 vs CB=26)  ->  p = 1.0000
+    floor    EP_vs_SA  : EP>SA in 1 tasks, SA>EP in 0, ties 1  (pooled EP=9 vs SA=6)  ->  p = 1.0000
+------------------------------------------------------------------------------
+(iv) LEAVE-ONE-OUT on the pooled argmax
+    ceiling  pooled argmax=SA  margin over EP = 15  largest single task = 9.6% of the bucket's fires  min deletions to hand it to EP: 2
+             no single-task deletion flips the argmax
+    mid      pooled argmax=EP  margin over CB = 4  largest single task = 22.8% of the bucket's fires  min deletions to hand it to CB: 1
+             DROP clojure-write                      -> argmax becomes CB   (task had 17 fires: EP=10 CB=5 RE=2)
+             DROP springboot-tdd                     -> argmax becomes CB   (task had 21 fires: EP=15 RE=6)
+    floor    pooled argmax=EP  margin over SA = 3  largest single task = 100.0% of the bucket's fires  min deletions to hand it to SA: None
+             DROP xlsx                               -> argmax becomes NONE   (task had 15 fires: EP=9 SA=6)
+
+==============================================================================
+VERDICT
+==============================================================================
+Paper Finding #2 (bucket -> dominant SIP signature): NOT SUPPORTED at the task level.
+  - bucket-label permutation, G=4.50, p=0.84 (n=40 usable tasks, 20000 shuffles): the bucket x dominant-SIP table is indistinguishable from random labelling.
+  - ceiling SA-vs-EP paired sign test: 12/12/13 (SA>EP / EP>SA / ties), p=1.000.
+  - mid EP-vs-CB paired sign test: 2/2/6, p=1.000.
+  - cluster bootstrap: P(SA argmax | ceiling)=0.670, P(EP argmax | mid)=0.455, P(CB argmax | mid)=0.338, P(EP argmax | floor)=0.748.
+  - pooled margins are tiny relative to the fire counts: ceiling SA-EP=15 of 415 fires (flipped by dropping 2 task(s)); mid EP-CB=4 of 92 (2 single-task deletions already flip it); floor EP-SA=3 of 15 (one task supplies 100%).
+RECOMMENDATION: report the signature claim as descriptive of the pooled fire mix, not as a bucket-conditional prediction; or drop it.
+
+wrote <REPO_ROOT>/rebuttal/results/cta_signature_stability.json

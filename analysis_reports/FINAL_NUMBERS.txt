@@ -1,0 +1,81 @@
+==============================================================================
+CORRECTED STATISTICS FOR THE BUCKET-SIGNATURE AND DESTRUCTIVE-SHARE ANALYSES
+Recomputed after an independent statistical review of the submitted analysis.
+Where a submitted figure did not survive that review, both the superseded value
+and the reason are recorded below, so the correction is auditable.
+==============================================================================
+self-check: 49 tasks | 696 divergences | 522 SIP fires | PS=11 EP=186 RE=42 SA=184 CB=99
+
+------------------------------------------------------------------------------
+[A] FINDING 2 -- the bucket-conditional SIP signature
+------------------------------------------------------------------------------
+The submitted claim is about TASKS, but the evidence offered for it pools FIRES.
+
+  (i)  fire-level chi-square, treating each of the 522 fires as independent:
+         G = 50.49, df = 8  ->  p = 3.29e-08
+       This test is invalid here: it ignores task clustering, and tasks are
+       overdispersed by a factor of four to six.
+
+  (ii) task-clustered permutation over the full count vectors, all 49 tasks:
+         G = 50.49  ->  p = 0.1702
+       This is the correct test for the claim as stated.
+
+Conclusion: the apparent significance is a unit-of-analysis artefact. The
+signature is NOT STATISTICALLY SUPPORTED at the task level.
+
+------------------------------------------------------------------------------
+[B] CEILING BUCKET, paired per-task SA vs EP
+------------------------------------------------------------------------------
+The one adequately powered paired test available in these data:
+
+  SA > EP on 12 tasks | EP > SA on 12 tasks | 13 ties
+  exact two-sided p = 1.0000
+
+  pooled counts SA = 162, EP = 147: the pooled margin is not reproduced at the
+  task level.
+
+------------------------------------------------------------------------------
+[C] DESTRUCTIVE SHARE
+------------------------------------------------------------------------------
+  fire-level share (the submitted figure)   : 283/522 = 54.2%   UNCHANGED
+  distinct divergences carrying SA or CB    : 246 to 274
+
+SA/CB co-firing inflates the destructive COUNT by 3.3% to 15.0%. It does not
+reduce the SHARE.
+
+------------------------------------------------------------------------------
+SUPERSEDED FIGURES AND WHY
+------------------------------------------------------------------------------
+The following appear in earlier working files in this repository. They are
+superseded; the corrected values are given above.
+
+1. "permutation p = 0.84; the table is indistinguishable from random labelling"
+   Superseded. That value comes from an argmax-collapsed test that discards
+   roughly 82% of the count information. The correct task-clustered value is
+   p = 0.17. The accurate description is "not statistically supported", which
+   is weaker than "indistinguishable from random".
+
+2. "the destructive share drops from 54.2% to 35-39%"
+   Superseded. That comparison sets fires/fires against divergences/divergences,
+   so both terms change. Like for like, the share does not drop.
+
+3. "the 112 structurally-fired EP instances dilute the destructive share"
+   Superseded. Applied consistently, removing them RAISES the destructive share
+   to 283/410 = 69.0%. The structural-EP decomposition is a construct-validity
+   observation about the EP detector and is not a share adjustment.
+
+4. Mid-bucket EP-vs-CB and floor-bucket EP-vs-SA sign tests, offered as
+   corroboration of the signature.
+   Superseded. With 4 and 1 discordant pairs, the smallest attainable two-sided
+   p values are 0.125 and 1.000. These tests cannot reach significance under any
+   data and carry no evidential weight. Only the ceiling test in [B] is reported.
+
+------------------------------------------------------------------------------
+SCOPE OF THE CORRECTED CLAIM
+------------------------------------------------------------------------------
+A power simulation shows that a signature strong enough to support the prose in
+the submitted Section 4.3 (delta >= 0.5 to 0.6) would have been detected with at
+least 95% probability. The strong form of the claim is therefore excluded by
+these data. A moderate signature is not excluded. The accurate statement is that
+the signature is not supported; these data do not establish that the effect is
+zero.

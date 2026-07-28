@@ -1,0 +1,520 @@
+==============================================================================
+UPTAKE-CONDITIONED SUBGROUP ANALYSIS
+Study: claude-sonnet-4.5-nudged regen (17 tasks x 3 reps)
+Generated: 2026-07-28 on analysis host; script: /root/subgroup/uptake_analysis.py
+==============================================================================
+
+KEY FINDINGS
+- Refined uptake: 16/51 with-traces STRONG (12 verifiably ingested skill
+  content, 4 attempted-only), 0 WEAK, 35 NONE. xlsx does NOT reclassify:
+  0/3 uptake confirmed manually (no SKILL.md read, no scripts/ use).
+- STRONG subgroup (9 tasks, 48 pairs): excess +2.22 div [-0.08,+4.01], +2.80 SIPs [-0.57,+6.43] (Wilcoxon p=0.1484 / 0.1484).
+- STRONG-ingested sensitivity (8 tasks, 36 pairs): +2.65 div [+0.09,+4.44], +4.12 SIPs [-0.27,+8.60].
+- NONE subgroup (negative control, 14 tasks, 105 pairs): +0.98 div [-1.67,+3.52], +1.02 SIPs [-2.59,+4.24] - closer to 0 than STRONG, as a real uptake effect would predict, but
+  not cleanly zero and CIs overlap STRONG's heavily.
+- Sanity checks reproduce all known aggregates exactly (19.55/16.08,
+  20.95/18.57, +1.40 p=0.207, +2.49 p=0.109).
+- This analysis is POST HOC and descriptive; see CAVEATS.
+
+METHOD (uptake scoring, per with-trace):
+  (a) tool_use events invoking the skill: name=='Skill' OR serialized input
+      contains '.claude/skills' or 'SKILL.md'. (Nudge text in the prompt
+      also contains 'SKILL.md' but lives in user/queue-operation lines,
+      so tool_use-only counting is uncontaminated.)
+  (b) count of distinctive SKILL.md literals found anywhere in the trace.
+      Literals are 8-12 per skill, auto-extracted (code lines, inline code,
+      >=4-word phrases, version pins), then filtered: dropped if verbatim in
+      >=2 other study skills' SKILL.md (boilerplate), dropped if present in
+      ANY of the same task's 3 without-skill traces (task-derivable, not
+      skill evidence), blacklist (semver links etc.), containment dedup.
+  (c) tool_use inputs referencing bundled skill files (scripts/ plus other
+      resources: matched by 2-component path suffix e.g. 'office/pack.py',
+      or distinctive basenames >=12 chars). Only xlsx ships scripts/;
+      turborepo ships references/*.md; add-admin-api-endpoint ships 3 .md
+      reference files. (c) generalizes 'scripts/' to all bundled resources.
+  Class: STRONG if a>0 or c>0; WEAK if only b>=2; else NONE.
+  'ing' column = skill content verifiably ingested into the trace (b>=2);
+  STRONG traces with ing=no are 'attempted-only' engagements (glob-only
+  searches or failed Reads of the skill path).
+
+ENVIRONMENT NOTE (verified on all 102 traces): with-runs carry a
+skill_listing attachment with skillCount=58 (task skill + 57 others);
+without-runs carry skillCount=9 (base skills only). So the treatment
+context differs from control by ~49 skill DESCRIPTIONS, not only the one
+study skill. Uptake metric (b) is immune to this because literals are
+taken from SKILL.md bodies only (frontmatter descriptions excluded), and
+(a)/(c) count tool_use inputs only.
+
+------------------------------------------------------------------------------
+1. PER-TRACE UPTAKE TABLE (51 nudged with-skill traces)
+------------------------------------------------------------------------------
+task                             rep   a   b   c  ing  class
+add-admin-api-endpoint           r1    2   8   1  yes  STRONG
+add-admin-api-endpoint           r2    1   0   0  no   STRONG
+add-admin-api-endpoint           r3    4   8   3  yes  STRONG
+add-uint-support                 r1    1  12   0  yes  STRONG
+add-uint-support                 r2    0   0   0  no   NONE
+add-uint-support                 r3    0   0   0  no   NONE
+bash-defensive-patterns          r1    1   0   0  no   STRONG
+bash-defensive-patterns          r2    1   0   0  no   STRONG
+bash-defensive-patterns          r3    2  12   0  yes  STRONG
+changelog-automation             r1    0   0   0  no   NONE
+changelog-automation             r2    0   0   0  no   NONE
+changelog-automation             r3    0   0   0  no   NONE
+clojure-write                    r1    0   0   0  no   NONE
+clojure-write                    r2    0   0   0  no   NONE
+clojure-write                    r3    0   0   0  no   NONE
+dbt-transformation-patterns      r1    0   0   0  no   NONE
+dbt-transformation-patterns      r2    1  12   0  yes  STRONG
+dbt-transformation-patterns      r3    1  12   0  yes  STRONG
+django-patterns                  r1    0   0   0  no   NONE
+django-patterns                  r2    0   0   0  no   NONE
+django-patterns                  r3    0   0   0  no   NONE
+github-actions-templates         r1    0   0   0  no   NONE
+github-actions-templates         r2    1   0   0  no   STRONG
+github-actions-templates         r3    0   0   0  no   NONE
+gitlab-ci-patterns               r1    0   0   0  no   NONE
+gitlab-ci-patterns               r2    0   0   0  no   NONE
+gitlab-ci-patterns               r3    0   0   0  no   NONE
+langsmith-fetch                  r1    1  12   0  yes  STRONG
+langsmith-fetch                  r2    0   0   0  no   NONE
+langsmith-fetch                  r3    0   0   0  no   NONE
+rag-implementation               r1    0   0   0  no   NONE
+rag-implementation               r2    0   0   0  no   NONE
+rag-implementation               r3    1  12   0  yes  STRONG
+risk-metrics-calculation         r1    0   0   0  no   NONE
+risk-metrics-calculation         r2    0   0   0  no   NONE
+risk-metrics-calculation         r3    0   0   0  no   NONE
+springboot-tdd                   r1    0   0   0  no   NONE
+springboot-tdd                   r2    0   0   0  no   NONE
+springboot-tdd                   r3    0   0   0  no   NONE
+tdd-workflow                     r1    0   0   0  no   NONE
+tdd-workflow                     r2    0   0   0  no   NONE
+tdd-workflow                     r3    0   0   0  no   NONE
+turborepo                        r1    1  12   0  yes  STRONG
+turborepo                        r2    1  12   0  yes  STRONG
+turborepo                        r3    1  12   0  yes  STRONG
+vector-index-tuning              r1    0   0   0  no   NONE
+vector-index-tuning              r2    0   0   0  no   NONE
+vector-index-tuning              r3    1  12   0  yes  STRONG
+xlsx                             r1    0   0   0  no   NONE
+xlsx                             r2    0   0   0  no   NONE
+xlsx                             r3    0   0   0  no   NONE
+
+Per-task class counts (of 3 reps):
+task                             STRONG WEAK NONE   n_literals_available
+add-admin-api-endpoint                3    0    0   8
+add-uint-support                      1    0    2   12
+bash-defensive-patterns               3    0    0   12
+changelog-automation                  0    0    3   12
+clojure-write                         0    0    3   12
+dbt-transformation-patterns           2    0    1   12
+django-patterns                       0    0    3   12
+github-actions-templates              1    0    2   12
+gitlab-ci-patterns                    0    0    3   12
+langsmith-fetch                       1    0    2   12
+rag-implementation                    1    0    2   12
+risk-metrics-calculation              0    0    3   12
+springboot-tdd                        0    0    3   12
+tdd-workflow                          0    0    3   12
+turborepo                             3    0    0   12
+vector-index-tuning                   1    0    2   12
+xlsx                                  0    0    3   12
+TOTAL                                16    0   35
+
+Refined vs crude census: crude line-count heuristic found 19/51; refined
+tool_use-level scoring finds 16/51 STRONG (12 verifiably ingested + 4
+attempted-only), 0 WEAK, 35 NONE. The crude census over-counted traces
+where extra marker lines came from non-uptake sources, and none of the
+crude misses were recovered as script-based use.
+
+xlsx SPECIFICALLY: still 0/3 uptake (a=b=c=0 in all three runs). Manual
+inspection confirms no reference to the skill, its SKILL.md, or any of its
+52 scripts/ files (recalc.py, office/pack.py, office/soffice.py, ...) in
+any tool call; the only 'skill' strings are the generic nudge and the
+skill_listing attachment. The script-use hypothesis for xlsx is REFUTED:
+its large SIP excess occurs with zero detectable uptake.
+
+Skill-tool invocations (5 total): add-admin-api-endpoint r1 & r3,
+dbt-transformation-patterns r3, langsmith-fetch r1, rag-implementation r3.
+Attempted-only STRONG traces (4): add-admin r2 (Read of skill directory),
+bash-defensive-patterns r1 & r2 (Glob for SKILL.md path only),
+github-actions-templates r2 (Read of SKILL.md failed: 'File does not
+exist' - wrong path guess).
+
+Distinctive literals matched per trace are in subgroup_data.json;
+chosen literals per task listed in appendix at the end of this report.
+
+------------------------------------------------------------------------------
+2. SANITY CHECK: reproduce known aggregates from our own join
+------------------------------------------------------------------------------
+null-minus pooled mean over 51 pairs: div=19.55  sips=16.08   (known: 19.55 / 16.08)
+treatment  pooled mean over 153 pairs: div=20.95  sips=18.57   (known: 20.95 / 18.57)
+per-task paired excess (all treatment pairs, n=17 tasks): div=+1.40 (Wilcoxon p=0.2069)  sips=+2.49 (p=0.1089)
+   (known: +1.40 div p=0.207, +2.49 SIPs p=0.109)
+
+------------------------------------------------------------------------------
+3. TREATMENT vs NULL-MINUS PAIRED EXCESS, BY WITH-TRACE UPTAKE CLASS
+------------------------------------------------------------------------------
+
+[STRONG] subgroup: 9 tasks, 48 treatment pairs
+  task                             n_pairs  excess_div  excess_sips
+  add-admin-api-endpoint                 9       +2.56        +3.78
+  add-uint-support                       3       +3.33        -5.00
+  bash-defensive-patterns                9       +3.67        +5.22
+  dbt-transformation-patterns            6       -5.50        +4.83
+  github-actions-templates               3       +0.00        +0.33
+  langsmith-fetch                        3       +3.67        +0.00
+  rag-implementation                     3       +5.67        -3.67
+  turborepo                              9       +1.56       +14.00
+  vector-index-tuning                    3       +5.00        +5.67
+  POOLED (unweighted mean over 9 tasks):
+    divergences: +2.22  boot95%CI [-0.08, +4.01]  Wilcoxon p=0.1484
+    SIPs:        +2.80  boot95%CI [-0.57, +6.43]  Wilcoxon p=0.1484
+
+[WEAK] subgroup: 0 tasks, 0 treatment pairs
+  (no pairs)
+
+[NONE] subgroup: 14 tasks, 105 treatment pairs
+  task                             n_pairs  excess_div  excess_sips
+  add-uint-support                       6       -0.67        -9.83
+  changelog-automation                   9       +4.89        +2.78
+  clojure-write                          9       +5.56        +4.89
+  dbt-transformation-patterns            3       +0.33        +2.33
+  django-patterns                        9       +3.89        +2.11
+  github-actions-templates               6       -1.83        +2.67
+  gitlab-ci-patterns                     9       -1.89        -0.33
+  langsmith-fetch                        6       +0.83        -0.17
+  rag-implementation                     6       +2.00       -12.67
+  risk-metrics-calculation               9       +7.89        +6.44
+  springboot-tdd                         9       -5.89        +0.33
+  tdd-workflow                           9       -9.11        -4.44
+  vector-index-tuning                    6       -1.33        +7.00
+  xlsx                                   9       +9.00       +13.11
+  POOLED (unweighted mean over 14 tasks):
+    divergences: +0.98  boot95%CI [-1.67, +3.52]  Wilcoxon p=0.5416
+    SIPs:        +1.02  boot95%CI [-2.59, +4.24]  Wilcoxon p=0.3575
+
+Sensitivity: STRONG restricted to traces where skill content was
+verifiably ingested (b>=2), dropping the 4 attempted-only engagements:
+
+[STRONG-ingested] subgroup: 8 tasks, 36 treatment pairs
+  task                             n_pairs  excess_div  excess_sips
+  add-admin-api-endpoint                 6       +3.17        +4.83
+  add-uint-support                       3       +3.33        -5.00
+  bash-defensive-patterns                3       +4.33       +12.33
+  dbt-transformation-patterns            6       -5.50        +4.83
+  langsmith-fetch                        3       +3.67        +0.00
+  rag-implementation                     3       +5.67        -3.67
+  turborepo                              9       +1.56       +14.00
+  vector-index-tuning                    3       +5.00        +5.67
+  POOLED (unweighted mean over 8 tasks):
+    divergences: +2.65  boot95%CI [+0.09, +4.44]  Wilcoxon p=0.1484
+    SIPs:        +4.12  boot95%CI [-0.27, +8.60]  Wilcoxon p=0.1562
+
+Note: NONE subgroup is the built-in negative control (expected ~0 if the
+apparent treatment effect is driven by actual skill uptake). Caveat: even
+NONE-class with-traces had the skill's description (and 57 other skill
+descriptions) in context, so NONE is 'no detectable engagement', not
+'no exposure'.
+
+------------------------------------------------------------------------------
+4. NULL-PLUS (with-vs-with) SPLIT BY SIDE UPTAKE
+------------------------------------------------------------------------------
+null-plus pooled over 51 pairs: div=24.08 sips=20.02
+  (the known 20.02 is the null-plus SIP mean; null-minus floor is 19.55 div / 16.08 SIPs)
+
+Split by STRONG-based count of the two sides:
+  group    n_pairs  mean_div  mean_sips
+  BOTH          10     28.00      26.10
+  ONE           12     18.25      14.83
+  NEITHER       29     25.14      20.07
+
+Split by any-uptake (STRONG or WEAK) count of the two sides:
+  group    n_pairs  mean_div  mean_sips
+  BOTH          10     28.00      26.10
+  ONE           12     18.25      14.83
+  NEITHER       29     25.14      20.07
+
+Reading: BOTH-uptake pairs show the HIGHEST internal SIP/divergence rate,
+NEITHER pairs are intermediate (and still above the without-without floor),
+and mixed ONE pairs are lowest. This does NOT match the naive story that
+mixed pairs drive the elevated null-plus level; instead, pairs where both
+runs engaged the skill differ from each other the most (skill engagement
+appears to add its own run-to-run variability), and even no-detectable-
+uptake with-runs diverge more than without-runs (consistent with the 58-
+vs-9 skill-description context difference, or with heavier-tailed with-run
+behavior). Groups are task-confounded (e.g., BOTH is dominated by
+add-admin/bash-defensive/turborepo; NEITHER contains xlsx), so treat these
+splits as descriptive only.
+
+------------------------------------------------------------------------------
+5. CAVEATS
+------------------------------------------------------------------------------
+- This subgroup analysis is POST HOC: uptake classes were defined after
+  seeing the headline (null-adjusted) results, and the STRONG/WEAK/NONE
+  thresholds (a>0 or c>0; b>=2) were chosen by us, not preregistered.
+- Uptake is not randomized: traces that engage the skill may differ from
+  non-engaging traces in other ways (e.g., longer, more exploratory runs),
+  so the STRONG-vs-NONE contrast is correlational, not causal.
+- The 9 treatment pairs per task share 3 with- and 3 without-traces, so
+  pair-level observations are dependent; all inference here is at the task
+  level (n = number of tasks in the subgroup), which is small.
+- Literal extraction (b) is heuristic; false negatives possible when a
+  model paraphrases skill guidance, false positives when a model
+  independently produces a skill-like string not seen in the 3 without
+  traces (a finite leakage control).
+- Observed b values are bimodal (0 vs 8-12): literal matches arise from
+  the SKILL.md body being echoed into the trace after a successful read,
+  so (b) behaves as a read-verification signal here. No trace adopted >=2
+  literals without an explicit read (WEAK class is empty), i.e. we found
+  no evidence of skill-content adoption without reading the file.
+- Treatment differs from control by more than the study skill: with-runs
+  had 58 installed skills (descriptions in context), without-runs had 9.
+  Any description-level influence (from the study skill's or the 57
+  others' descriptions) is invisible to our uptake metrics and would land
+  in the NONE subgroup. This is a study-design confound to acknowledge in
+  the rebuttal, independent of this subgroup analysis.
+- Metric (c) extends 'scripts/' to all bundled skill resources because
+  only xlsx ships a scripts/ directory.
+- Bootstrap CIs resample tasks (10k, seed 20260728) and are percentile CIs;
+  with few tasks in a subgroup they are unstable and should be read as
+  descriptive.
+
+------------------------------------------------------------------------------
+APPENDIX: distinctive literals chosen per task (kind: code/inline/phrase)
+------------------------------------------------------------------------------
+
+add-admin-api-endpoint (8 literals):
+  [phrase] Add basic `e2e-api` tests for the endpoint in `ghost/core/test/e2e-api/admin` to ensure...
+  [phrase] If creating an endpoint for an entirely new resource, create a new endpoint file in `gh...
+  [phrase] For a detailed reference on Ghost's API framework and how to create API controllers, se...
+  [phrase] Run the tests and iterate until they pass: `cd ghost/core && yarn test:single test/e2e-...
+  [phrase] Add routes for each endpoint to `ghost/core/core/server/web/api/endpoints/admin/routes....
+  [inline] and a single endpoint definition, i.e.
+  [phrase] Otherwise, locate the existing endpoint file in the same directory.
+  [phrase] Create Admin API Endpoint
+
+add-uint-support (12 literals):
+  [phrase] This skill helps add support for unsigned integer types (uint16, uint32, uint64) to PyT...
+  [code  ] }), AT_EXPAND(AT_ALL_TYPES), AT_EXPAND(AT_BAREBONES_UNSIGNED_TYPES), kHalf, kBFloat16);
+  [code  ] }), AT_EXPAND(AT_ALL_TYPES), AT_EXPAND(AT_BAREBONES_UNSIGNED_TYPES), kBFloat16, kHalf);
+  [code  ] AT_INTEGRAL_TYPES_V2       // INTEGRAL_TYPES + BAREBONES_UNSIGNED_TYPES
+  [code  ] }), AT_EXPAND(AT_ALL_TYPES), AT_EXPAND(AT_BAREBONES_UNSIGNED_TYPES));
+  [code  ] }), AT_EXPAND(AT_INTEGRAL_TYPES_V2), AT_EXPAND(AT_FLOATING_TYPES));
+  [code  ] AT_DISPATCH_ALL_TYPES_AND2(kHalf, kBFloat16, dtype, "op", [&]() {
+  [code  ] }), AT_EXPAND(AT_INTEGRAL_TYPES), AT_EXPAND(AT_FLOATING_TYPES));
+  [code  ] AT_INTEGRAL_TYPES          // kByte, kChar, kInt, kLong, kShort
+  [code  ] AT_DISPATCH_V2(iter.dtype(), "min_values_cuda", AT_WRAP([&]() {
+  [code  ] └─ No → Add AT_EXPAND(AT_BAREBONES_UNSIGNED_TYPES) to type list
+  [code  ] AT_DISPATCH_V2(iter.input_dtype(), "min_cuda", AT_WRAP([&]() {
+
+bash-defensive-patterns (12 literals):
+  [code  ] TMPDIR=$(mktemp -d) || { echo "ERROR: Failed to create temp directory" >&2; exit 1; }
+  [code  ] [[ -d "$input_dir" ]] || { echo "ERROR: input_dir not a directory" >&2; return 1; }
+  [code  ] mkdir -p "$output_dir" || { echo "ERROR: Cannot create output_dir" >&2; return 1; }
+  [code  ] [[ -n "$OUTPUT_FILE" ]] || { echo "ERROR: -o/--output is required" >&2; usage 1; }
+  [code  ] [[ -n "$output_dir" ]] || { echo "ERROR: --output is required" >&2; return 1; }
+  [code  ] [[ -n "$input_file" ]] || { echo "ERROR: --input is required" >&2; return 1; }
+  [code  ] set -Eeuo pipefail  # Exit on error, unset variables, pipe failures
+  [code  ] SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+  [code  ] echo "ERROR: Missing required commands: ${missing_deps[*]}" >&2
+  [code  ] name=$(<"$file")  # Modern, safe variable assignment from file
+  [code  ] output=$(command -v python3)  # Get command location safely
+  [code  ] done < <(find "$input_dir" -maxdepth 1 -type f -print0)
+
+changelog-automation (12 literals):
+  [code  ] {% if commit.github.pr_number %} ([#{{ commit.github.pr_number }}](https://github.com/o...
+  [code  ] https://github.com/owner/repo/compare/{{ release.previous.version }}...{{ release.versi...
+  [code  ] **Full Changelog**: https://github.com/owner/repo/compare/v{{ .Previous }}...v{{ .Curre...
+  [code  ] [unreleased]: https://github.com/owner/repo/compare/{{ release.previous.version }}...HEAD
+  [code  ] bump_map = {"feat" = "MINOR", "fix" = "PATCH", "perf" = "PATCH", "refactor" = "PATCH"}
+  [code  ] message_template = "{{change_type}}{% if scope %}({{scope}}){% endif %}: {{message}}"
+  [code  ] schema_pattern = "^(feat|fix|docs|style|refactor|perf|test|chore)(\\(\\w+\\))?:\\s.*"
+  [phrase] Patterns and tools for automating changelog generation, release notes, and version mana...
+  [code  ] "{{host}}/{{owner}}/{{repository}}/compare/{{previousTag}}...{{currentTag}}",
+  [code  ] "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}",
+  [code  ] This release introduces dark mode support and improves checkout performance
+  [code  ] 'subject-case': [2, 'never', ['start-case', 'pascal-case', 'upper-case']],
+
+clojure-write (12 literals):
+  [phrase] Once a function works correctly in the REPL, move it from the REPL environment into you...
+  [phrase] Compose smaller functions together, testing each new composition in the REPL to verify ...
+  [phrase] Break each feature down into the smallest, most basic functions that can be developed a...
+  [phrase] Test it thoroughly with a variety of inputs, including typical use cases and relevant e...
+  [phrase] Use the REPL as your primary tool to experiment with different approaches, iterate quic...
+  [phrase] Once you know these functions are good, return to 1, and compose them into the task tha...
+  [phrase] Use Clojure's functional programming features—like immutability, higher-order functions...
+  [phrase] Make sure every function is fully tested in the REPL before it is depended upon by othe...
+  [phrase] When `clojure-mcp` tools are available (e.g., `clojure_eval`, `clojure_edit`), **always...
+  [code  ] ./bin/mage -repl --namespace metabase.app-db.connection
+  [phrase] Feel free to copy these REPL session trials into actual test cases using `deftest` and ...
+  [phrase] Call functions in the namespace with test inputs, and observe that the outputs are correct
+
+dbt-transformation-patterns (12 literals):
+  [code  ] sum(case when payment_status = 'succeeded' then amount else 0 end) as total_amount_paid,
+  [code  ] {{ dbt_utils.generate_surrogate_key(['customers.customer_id']) }} as customer_key,
+  [code  ] count(case when payment_status = 'succeeded' then 1 end) as successful_payments,
+  [code  ] coalesce(payment_summary.successful_payments, 0) as successful_payments,
+  [code  ] when customers.lifetime_value >= 100 then 'medium'
+  [code  ] when customers.lifetime_value >= 1000 then 'high'
+  [code  ] dbt run --select fct_orders+     # Run fct_orders and its downstream
+  [code  ] -- models/intermediate/finance/int_payments_pivoted_to_customer.sql
+  [code  ] coalesce(order_summary.total_order_value, 0) as total_order_value,
+  [code  ] where {{ column_name }} >= dateadd(day, -{{ days }}, current_date)
+  [code  ] dbt run --select +fct_orders     # Run fct_orders and its upstream
+  [code  ] where _fivetran_synced > (select max(_loaded_at) from {{ this }})
+
+django-patterns (12 literals):
+  [phrase] Remember: Django provides many shortcuts, but for production applications, structure an...
+  [code  ] password_confirm = serializers.CharField(write_only=True, style={'input_type': 'passwor...
+  [code  ] logger.info(f'{request.method} {request.path} - {response.status_code} - {duration:.3f}s')
+  [code  ] filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+  [code  ] queryset = Product.objects.select_related('category').prefetch_related('tags')
+  [code  ] category_name = serializers.CharField(source='category.name', read_only=True)
+  [code  ] return Response({'message': 'Added to cart'}, status=status.HTTP_201_CREATED)
+  [code  ] @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+  [code  ] tags = models.ManyToManyField('Tag', blank=True, related_name='products')
+  [code  ] from django.core.validators import MinValueValidator, MaxValueValidator
+  [code  ] tags = [Tag.objects.get_or_create(name=name)[0] for name in tag_names]
+  [code  ] from django.contrib.auth.password_validation import validate_password
+
+github-actions-templates (12 literals):
+  [phrase] Create efficient, secure GitHub Actions workflows for continuous integration and deploy...
+  [code  ] aws eks update-kubeconfig --name production-cluster --region us-west-2
+  [phrase] Production-ready GitHub Actions workflow patterns for testing, building, and deploying ...
+  [code  ] aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  [code  ] "text": "Deployment to production completed successfully!"
+  [code  ] kubectl rollout status deployment/my-app -n production
+  [code  ] aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  [code  ] images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+  [code  ] os: [ubuntu-latest, macos-latest, windows-latest]
+  [code  ] kubectl describe deployment my-app -n production
+  [code  ] - name: Upload Trivy results to GitHub Security
+  [code  ] - name: Use Node.js ${{ matrix.node-version }}
+
+gitlab-ci-patterns (12 literals):
+  [code  ] - trivy image --exit-code 1 --severity HIGH,CRITICAL $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+  [code  ] - kubectl config set-cluster k8s --server="$KUBE_URL" --insecure-skip-tls-verify=true
+  [code  ] - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  [phrase] Create efficient GitLab CI pipelines with proper stage organization, caching, and deplo...
+  [code  ] - kubectl config set-context default --cluster=k8s --user=admin
+  [code  ] - kubectl config set-credentials admin --token="$KUBE_TOKEN"
+  [code  ] - kubectl rollout status deployment/my-app -n production
+  [code  ] - template: Security/Dependency-Scanning.gitlab-ci.yml
+  [phrase] Comprehensive GitLab CI/CD pipeline patterns for automated testing, building, and deplo...
+  [code  ] - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA .
+  [code  ] - kubectl rollout status deployment/my-app -n staging
+  [code  ] - template: Security/Container-Scanning.gitlab-ci.yml
+
+langsmith-fetch (12 literals):
+  [code  ] langsmith-fetch traces --last-n-minutes 10 --limit 20 --format raw | grep -i "memory\|r...
+  [code  ] langsmith-fetch traces "$SESSION_DIR/traces" --last-n-minutes 30 --limit 50 --include-m...
+  [code  ] 💡 Issue found: Trace 2 failed due to Neo4j timeout. Recommend checking database connect...
+  [code  ] langsmith-fetch traces --last-n-minutes 30 --limit 50 --format json > recent-traces.json
+  [code  ] langsmith-fetch traces ./perf-analysis --last-n-minutes 30 --limit 50 --include-metadata
+  [code  ] langsmith-fetch traces --last-n-minutes 30 --limit 50 --format raw | grep -i error
+  [code  ] The search_nodes tool returned node IDs that no longer exist in the database,
+  [phrase] Debug LangChain and LangGraph agents by fetching execution traces directly from LangSmi...
+  [code  ] langsmith-fetch trace <error-id> --format json > pre-commit-error.json
+  [code  ] langsmith-fetch traces ./debug-session --last-n-minutes 30 --limit 50
+  [code  ] langsmith-fetch traces --last-n-minutes 5 --limit 5 --format pretty
+  [code  ] langsmith-fetch traces --after "2025-12-24T13:00:00Z" --limit 20
+
+rag-implementation (12 literals):
+  [code  ] """Answer the question based on the context below. Include citations using [1], [2], etc.
+  [code  ] parent_splitter = RecursiveCharacterTextSplitter(chunk_size=2000, chunk_overlap=200)
+  [code  ] child_splitter = RecursiveCharacterTextSplitter(chunk_size=400, chunk_overlap=50)
+  [code  ] If you cannot answer based on the context, say "I don't have enough information."
+  [code  ] result = await rag_chain.ainvoke({"question": "What are the main features?"})
+  [code  ] connection_string = "postgresql+psycopg://user:pass@localhost:5432/vectordb"
+  [code  ] vectorstore = PineconeVectorStore(index_name="docs", embedding=embeddings)
+  [code  ] ranked = sorted(zip(candidates, scores), key=lambda x: x[1], reverse=True)
+  [code  ] context_text = "\n\n".join(doc.page_content for doc in state["context"])
+  [code  ] results = await multi_query_retriever.ainvoke("What is the main topic?")
+  [code  ] async def retrieve_and_rerank(query: str, k: int = 5) -> list[Document]:
+  [code  ] from langchain.retrievers.document_compressors import LLMChainExtractor
+
+risk-metrics-calculation (12 literals):
+  [phrase] [Risk Management and Financial Institutions (John Hull)](https://www.amazon.com/Risk-Ma...
+  [phrase] Comprehensive risk measurement toolkit for portfolio management, including Value at Ris...
+  [code  ] "annual_return": (1 + self.returns).prod() ** (self.ann_factor / len(self.returns)) - 1,
+  [code  ] annual_return = (1 + self.returns).prod() ** (self.ann_factor / len(self.returns)) - 1
+  [code  ] def downside_deviation(self, threshold: float = 0, annualized: bool = True) -> float:
+  [code  ] def risk_parity_weights(self, target_vol: float = None) -> pd.Series:
+  [code  ] aligned = pd.concat([self.returns, market_returns], axis=1).dropna()
+  [code  ] excess_return = self.returns.mean() * self.ann_factor - self.rf_rate
+  [code  ] drawdown_starts = in_drawdown & ~in_drawdown.shift(1).fillna(False)
+  [code  ] returns_below = threshold - self.returns[self.returns <= threshold]
+  [code  ] def information_ratio(self, benchmark_returns: pd.Series) -> float:
+  [code  ] {"type": "eq", "fun": lambda w: np.sum(w) - 1},  # Weights sum to 1
+
+springboot-tdd (12 literals):
+  [code  ] CreateMarketRequest req = new CreateMarketRequest("name", "desc", Instant.now(), List.o...
+  [code  ] {"name":"Test","description":"Desc","endDate":"2030-01-01T00:00:00Z","categories":["gen...
+  [code  ] @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+  [code  ] MarketBuilder withName(String name) { this.name = name; return this; }
+  [code  ] Market build() { return new Market(null, name, MarketStatus.ACTIVE); }
+  [code  ] when(repo.save(any())).thenAnswer(inv -> inv.getArgument(0));
+  [code  ] when(marketService.list(any())).thenReturn(Page.empty());
+  [code  ] Optional<MarketEntity> found = repo.findByName("Test");
+  [code  ] assertThat(result.name()).isEqualTo("name");
+  [code  ] .andExpect(jsonPath("$.content").isArray());
+  [code  ] <artifactId>jacoco-maven-plugin</artifactId>
+  [code  ] MarketEntity entity = new MarketEntity();
+
+tdd-workflow (12 literals):
+  [code  ] const request = new NextRequest('http://localhost/api/markets?limit=invalid')
+  [code  ] await expect(page.locator('text=Market created successfully')).toBeVisible()
+  [code  ] it('falls back to substring search when Redis unavailable', async () => {
+  [code  ] await expect(firstResult).toContainText('election', { ignoreCase: true })
+  [code  ] checkRedisHealth: jest.fn(() => Promise.resolve({ connected: true }))
+  [code  ] await page.fill('textarea[name="description"]', 'Test description')
+  [code  ] import { render, screen, fireEvent } from '@testing-library/react'
+  [code  ] await page.fill('input[placeholder="Search markets"]', 'election')
+  [code  ] test('user can search and filter markets', async ({ page }) => {
+  [code  ] const request = new NextRequest('http://localhost/api/markets')
+  [code  ] const results = page.locator('[data-testid="market-card"]')
+  [code  ] test('user can create a new market', async ({ page }) => {
+
+turborepo (12 literals):
+  [phrase] --affected` is the primary way to run only changed packages.** It automatically compare...
+  [phrase] turbo run` is recommended in package.json scripts and CI pipelines.** The shorthand `tu...
+  [phrase] How to identify tasks that need this pattern:** Look for tasks that read source files f...
+  [phrase] Some tasks can run in parallel (don't need built output from dependencies) but must inv...
+  [phrase] Alternative pattern:** Use a separate task name like `prepare` or `generate` for one-sh...
+  [code  ] ├─ TypeScript configuration → references/best-practices/structure.md#typescript-configu...
+  [code  ] ├─ Dev servers with dependencies → Use `with` key (references/configuration/tasks.md#with)
+  [code  ] ├─ JIT vs Compiled packages → references/best-practices/packages.md#compilation-strategies
+  [code  ] ├─ Restrict which packages can import others → references/boundaries/README.md#rule-types
+  [code  ] "outputs": ["node_modules/.cache/tsbuildinfo.json"] // or wherever tsBuildInfoFile points
+  [code  ] ├─ Package types (apps vs libraries) → references/best-practices/README.md#package-types
+  [code  ] "prebuild": "cd ../../packages/types && bun run build && cd ../utils && bun run build",
+
+vector-index-tuning (12 literals):
+  [code  ] recall=self._calculate_recall(search_fn, query_vectors, k) if self.ground_truth_fn else 0,
+  [code  ] def calculate_recall(predictions: np.ndarray, ground_truth: np.ndarray, k: int) -> float:
+  [code  ] "notes": f"Estimated for {num_vectors:,} vectors, {target_recall:.0%} recall"
+  [code  ] def _calculate_recall(self, search_fn, queries: np.ndarray, k: int) -> float:
+  [code  ] vector_bytes = num_vectors * dimensions * bytes_per_dimension[quantization]
+  [code  ] return quantized.astype(np.float32) / params["scale"] + params["min_val"]
+  [code  ] index.init_index(max_elements=n, M=m, ef_construction=ef_construction)
+  [code  ] params = {"min_val": min_val, "max_val": max_val, "scale": scale}
+  [code  ] optimize_for: str = "balanced"  # "recall", "speed", "memory"
+  [code  ] "balanced": models.HnswConfigDiff(m=16, ef_construct=128),
+  [code  ] """Estimate memory usage for different configurations."""
+  [code  ] kmeans = KMeans(n_clusters=n_centroids, random_state=42)
+
+xlsx (12 literals):
+  [phrase] Use a consistent, professional font (e.g., Arial, Times New Roman) for all deliverables...
+  [phrase] For data analysis, visualization, and basic operations, use **pandas** which provides p...
+  [code  ] growth = (df.iloc[-1]['Revenue'] - df.iloc[0]['Revenue']) / df.iloc[0]['Revenue']
+  [code  ] all_sheets = pd.read_excel('file.xlsx', sheet_name=None)  # All sheets as dict
+  [phrase] Warning**: If opened with `data_only=True` and saved, formulas are replaced with values...
+  [phrase] Yellow background (RGB: 255,255,0)**: Key assumptions needing attention or cells that n...
+  [phrase] Zeros**: Use number formatting to make all zeros "-", including percentages (e.g., "$#,...
+  [code  ] "error_summary": {              // Only present if errors found
+  [code  ] sheet['A1'].fill = PatternFill('solid', start_color='FFFF00')
+  [code  ] "total_formulas": 42,           // Number of formulas in file
+  [phrase] Every Excel model MUST be delivered with ZERO formula errors (#REF!, #DIV/0!, #VALUE!, ...
+  [code  ] sheet = wb.active  # or wb['SheetName'] for specific sheet
